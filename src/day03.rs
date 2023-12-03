@@ -1,4 +1,4 @@
-use std::{fs, collections::HashSet};
+use std::fs;
 
 pub fn day_03() {
     let input: String = fs::read_to_string("./inputs/3.txt").unwrap();
