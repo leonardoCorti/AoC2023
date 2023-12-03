@@ -122,9 +122,101 @@ pub fn part_1(input: String) -> String {
 
 pub fn part_2(input: String) -> String {
 
-    "".to_string()
+    let mut gear_positions: Vec<(usize,usize)> = Vec::new();
+
+    //let mut part_numbers: HashSet<Numbers>= HashSet::new();
+    let mut part_numbers: Vec<Numbers>= Vec::new();
+    
+    for (index, line) in input.lines().enumerate(){
+
+        let mut in_number: bool ;
+        let mut current_number: Vec<char> = Vec::new();
+
+        for(index_of_line, character_of_line) in line.chars().enumerate(){
+            if !character_of_line.is_ascii_digit() &&
+            !(character_of_line=='.')&&
+            character_of_line=='*'{
+                gear_positions.push((index_of_line,index));
+            }
+
+            in_number= character_of_line.is_ascii_digit();
+            
+            if in_number{
+                current_number.push(character_of_line);
+            }
+
+            if !in_number || index_of_line==(line.len()-1) {
+
+                if !current_number.is_empty() {
+                   let value: usize = current_number.iter()
+                        .collect::<String>().parse().unwrap(); 
+                    let start_position = index_of_line - current_number.len(); 
+                    let end_position = index_of_line; 
+                
+                    let the_number = Numbers{ 
+                        value,
+                        start_position: (start_position, index),
+                        end_position: (end_position-1, index)
+                    };
+                    if !part_numbers.contains(&the_number){
+                        part_numbers.push(the_number);
+                    }
+                    current_number = Vec::new();
+                }
+
+            }
+
+        }
+    }
+
+    //let result: Vec<&(usize,usize)> = gear_positions.iter()
+    //    .filter(|gp| is_adjacent_to_2_of(gp,&part_numbers)).collect();
+
+
+
+    let result: usize = gear_positions.iter()
+        .filter(|gp| is_adjacent_to_2_of(gp,&part_numbers))
+        .map(|gp| gear_ratio(gp, &part_numbers))
+        .sum();
+
+
+    result.to_string()
 }
 
+fn is_adjacent_to_2_of( coord: &(usize,usize), part_numbers: &Vec<Numbers>) -> bool {
+
+    let mut coord_vec: Vec<(usize,usize)> = Vec::new();
+    coord_vec.push(coord.clone());
+    let mut counter = 0;
+
+    for part in part_numbers{
+        if part.is_adjacent_to(&coord_vec){
+            counter += 1;
+        }
+    }
+
+    if counter == 2 {
+        return true;
+    }
+    else{
+        false
+    }
+}
+
+fn gear_ratio( coord: &(usize,usize), part_numbers: &Vec<Numbers>) -> usize {
+
+    let mut coord_vec: Vec<(usize,usize)> = Vec::new();
+    coord_vec.push(coord.clone());
+    let mult: usize;
+
+    mult = part_numbers.iter()
+        .filter(|pn| pn.is_adjacent_to(&coord_vec))
+        .map(|pn| pn.value)
+        .reduce(|a,b| a*b).unwrap();
+
+
+   mult 
+}
 
 
 #[cfg(test)]
