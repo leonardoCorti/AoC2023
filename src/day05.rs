@@ -18,8 +18,8 @@ struct Map{
 
 pub fn part_1(input: String) -> String {
 
-    let mut input_parts = input.split("\r\n\r\n");
-    //let mut input_parts = input.split("\n\n");
+    //let mut input_parts = input.split("\r\n\r\n");
+    let mut input_parts = input.split("\n\n");
     //println!("{input_parts:#?}");
     let mut maps: Vec<Map> = Vec::new();
 
@@ -230,7 +230,7 @@ pub(crate) fn part_2_v1(input:String) -> String {
 }
 
 pub(crate) fn part_2(input: String) -> String {
-    let mut groups = input.split("\r\n\r\n");
+    let mut groups = input.split("\n\n");
     let mut nums = groups.next().unwrap()
         .split_ascii_whitespace().skip(1)
         .map(|num| num.parse::<u64>().unwrap());
