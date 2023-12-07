@@ -11,6 +11,24 @@ pub(crate) fn day_07() {
 
 pub fn part_1(input: String) -> String {
 
+    let mut hands = parse_hands(input);
+
+    hands.sort_by(|a,b|{
+
+        compare_hands(&a.0,&b.0)
+
+    });
+
+    let mut result: u32 = 0;
+
+    for (index, (_, value)) in hands.iter().enumerate(){
+        result += ((index as u32) + 1) * value;
+    }
+
+    result.to_string()
+}
+
+fn parse_hands(input: String) -> Vec<(Vec<u32>, u32)> {
     let mut hands: Vec<(Vec<u32>,u32)> = Vec::new();
 
     for line in input.lines(){
@@ -22,25 +40,7 @@ pub fn part_1(input: String) -> String {
 
         hands.push((hand, bid));
     }
-    //println!("BEFORE: {hands:#?}");
-
-    hands.sort_by(|a,b|{
-
-        compare_hands(&a.0,&b.0)
-
-    });
-
-   // println!("AFTER: {hands:#?}");
-
-    let mut result: u32 = 0;
-
-    for (index, (_, value)) in hands.iter().enumerate(){
-        result += ((index as u32) + 1) * value;
-    }
-
-
-    result.to_string()
-
+    hands
 }
 
 fn compare_hands(a: &Vec<u32>, b: &Vec<u32>) -> Ordering {
