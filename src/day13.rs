@@ -1,4 +1,4 @@
-use std::{fs, collections::HashMap};
+use std::fs;
 
 pub(crate) fn day_13() {
     let input: String = fs::read_to_string("./inputs/13.txt").unwrap();
@@ -27,35 +27,6 @@ impl Mirror {
     }
 
     fn horizontal(&self) -> Option<usize> {
-
-        let mut Table: HashMap<Vec<char>, Vec<usize>> = HashMap::new();
-        for (i,line) in self.map.iter().enumerate() {
-            if let Some(list) = Table.get_mut(line){
-                list.push(i);
-            } else {
-                Table.insert(line.to_vec(), vec![i]);
-            }
-        }
-
-        todo!()
-    }
-
-    fn vertical(&self) -> Option<usize> {
-        todo!()
-    }
-
-    fn find_value(&self) -> usize {
-
-        if let Some(value) = self.horizontal(){
-            return value;
-        }
-        if let Some(value) = self.vertical(){
-            return value;
-        }
-        panic!("didn't find simmetry");
-    }
-
-    fn horizontal_no_hash(&self) -> Option<usize> {
         for i in 0..self.map.len()-1{
             if is_symmetric(&self.map, i){
                 return Some(i);
@@ -64,7 +35,7 @@ impl Mirror {
         None
     }
 
-    fn vertical_no_hash(&self) -> Option<usize> {
+    fn vertical(&self) -> Option<usize> {
         for column_index in 0..self.map[0].len(){
             if is_symmetric_vertical(&self.map, column_index){
                 return Some(column_index);
@@ -73,13 +44,45 @@ impl Mirror {
         None
     }
 
-    fn find_value_no_hash(&self) -> usize {
+    fn horizontal_with_smudge(&self) -> Option<usize> {
+        for i in 0..self.map.len()-1{
+            if is_symmetric_smudge(&self.map, i){
+                return Some(i);
+            }
+        }        
+        None
+    }
 
-        if let Some(value) = self.horizontal_no_hash(){
+    fn vertical_with_smudge(&self) -> Option<usize> {
+        for column_index in 0..self.map[0].len(){
+            if is_symmetric_vertical_smudge(&self.map, column_index){
+                return Some(column_index);
+            }
+        }
+        None
+    }
+
+
+    fn find_value(&self) -> usize {
+
+        if let Some(value) = self.horizontal(){
             //println!("found horizontal at {value}");
             return (value+1)*100;
         }
-        if let Some(value) = self.vertical_no_hash(){
+        if let Some(value) = self.vertical(){
+            //println!("found vertical at {value}");
+            return value+1;
+        }
+        panic!("didn't find simmetry");
+    }
+
+    fn find_value_smudge(&self) -> usize {
+
+        if let Some(value) = self.horizontal_with_smudge(){
+            //println!("found horizontal at {value}");
+            return (value+1)*100;
+        }
+        if let Some(value) = self.vertical_with_smudge(){
             //println!("found vertical at {value}");
             return value+1;
         }
@@ -90,11 +93,11 @@ impl Mirror {
 
 fn is_symmetric_vertical(map: &Vec<Vec<char>>, column_index: usize) -> bool {
 
-
     let y: isize = column_index as isize;
     let x_length: isize = map.len() as isize;
     let y_length: isize = map[0].len() as isize;
     let mut count = 0;
+
 
     while 0<=(y-count) && (y+count)<=y_length-2 {
         for i in 0..x_length {
@@ -104,9 +107,33 @@ fn is_symmetric_vertical(map: &Vec<Vec<char>>, column_index: usize) -> bool {
         }
         count += 1;
     }
-
     return true;
 }
+
+fn is_symmetric_vertical_smudge(map: &Vec<Vec<char>>, column_index: usize) -> bool {
+
+    let y: isize = column_index as isize;
+    let x_length: isize = map.len() as isize;
+    let y_length: isize = map[0].len() as isize;
+    let mut count = 0;
+
+    let mut found_smudge = false;
+
+    while 0<=(y-count) && (y+count)<=y_length-2 {
+        for i in 0..x_length {
+            if map[i as usize][(y-count) as usize] != map[i as usize][(y+count+1) as usize] {
+                if found_smudge{
+                    return false;
+                } else {
+                    found_smudge = true;
+                }
+            }
+        }
+        count += 1;
+    }
+    return true;
+}
+
 
 fn print_map(map: &Vec<Vec<char>>) {
     for line in map{
@@ -132,20 +159,53 @@ fn is_symmetric(map: &Vec<Vec<char>>, i: usize) -> bool {
     true
 }
 
+fn is_symmetric_smudge(map: &Vec<Vec<char>>, i: usize) -> bool {
+
+    let x: isize = i as isize;
+    let length: isize = map.len() as isize;
+    let mut count = 0;
+
+    let mut found_smudge = false;
+
+    while 0<=(x-count) && (x+count)<=length-2 {
+        /* if map[(x-count) as usize]!=map[(x+count+1) as usize] {
+            return false;
+        } */
+        for j in 0..map[0].len() {
+            if map[(x-count) as usize][j] != map[(x+count+1) as usize][j] {
+                if found_smudge{
+                    return false;
+                } else {
+                    found_smudge = true;
+                }
+            }
+        }
+        count += 1;
+    }
+    true
+}
+
 pub fn part_1(input: String) -> String {
 
     let maps:Vec<Mirror> = input.split("\n\n")
         .map(|map| Mirror::from_str(map))
         .collect();
 
-    let result: usize = maps.iter().map(|mirror| mirror.find_value_no_hash()).sum();
+    let result: usize = maps.iter().map(|mirror| mirror.find_value()).sum();
 
     result.to_string()
 
 }
 
 pub(crate) fn part_2(input:String) -> String {
-    "".to_string()
+
+    let maps:Vec<Mirror> = input.split("\n\n")
+        .map(|map| Mirror::from_str(map))
+        .collect();
+
+    let result: usize = maps.iter().map(|mirror| mirror.find_value_smudge()).sum();
+
+    result.to_string()
 }
 
 #[cfg(test)]
@@ -177,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        assert_eq!("todo", part_2(TEST_INPUT.to_string()));
+        assert_eq!("400", part_2(TEST_INPUT.to_string()));
     }
 }
 
